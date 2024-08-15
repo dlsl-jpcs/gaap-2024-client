@@ -105,7 +105,7 @@ function App() {
       }
 
 
-      if (state === "idle") {
+      if (state !== "started") {
         setOrientation({
           alpha,
           beta,
@@ -130,7 +130,7 @@ function App() {
         setBackground("red");
         setMoved(true);
         setTime(-1);
-        setState("idle");
+        setState("ended");
       }
     }
 
@@ -160,7 +160,7 @@ function App() {
       }
 
 
-      if (state === "idle") {
+      if (state !== "started") {
         setMotion({
           x,
           y,
@@ -184,7 +184,7 @@ function App() {
         setBackground("red");
         setMoved(true);
         setTime(-1);
-        setState("idle");
+        setState("ended");
       }
     }
 
@@ -215,7 +215,7 @@ function App() {
       }
 
       {
-        state === "idle" && moved && (
+        state === "ended" && moved && (
           <div className="card">
             <h1>You moved!</h1>
           </div>
@@ -223,7 +223,7 @@ function App() {
       }
 
       {
-        state === "idle" && !moved && (
+        state === "ended" && !moved && (
           <div className="card">
             <h1>Passed</h1>
           </div>
@@ -244,8 +244,10 @@ function App() {
             <h1>{time}</h1>
             <button onClick={() => {
               setTime(-1);
-              setState("idle");
+              setCountdownTime(3);
+              setState("ended");
               setBackground("transparent");
+
             }}>
               Stop Timer
             </button>
@@ -263,7 +265,7 @@ function App() {
           setState("countdown");
           setCountdownTime(3);
         }}>
-          Start test
+          {state === "idle" ? "Start" : "Restart"}
         </button>
       </div>
       <p className="read-the-docs">
