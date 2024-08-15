@@ -152,6 +152,8 @@ function App() {
           window.addEventListener("devicemotion", handleMotion);
         }
       });
+
+      return;
     }
 
     const handleMotion = (event: DeviceMotionEvent) => {
@@ -264,8 +266,8 @@ function App() {
           setTime(10);
           setMoved(false);
           setBackground("transparent");
-          setState("countdown");
           setCountdownTime(3);
+          setState("countdown");
         }}>
           {state === "idle" ? "Start" : "Restart"}
         </button>
