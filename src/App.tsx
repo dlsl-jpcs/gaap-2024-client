@@ -1,23 +1,12 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-
-interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
-  requestPermission?: () => Promise<'granted' | 'denied'>;
-}
-
-const requestOrientationPermission = (DeviceOrientationEvent as unknown as DeviceOrientationEventiOS).requestPermission;
-const iOS = typeof requestOrientationPermission === 'function';
-
-const requestMotionPermission = (DeviceMotionEvent as unknown as DeviceOrientationEventiOS).requestPermission;
-const iOSMotion = typeof requestMotionPermission === 'function';
+import { useOrientation } from './useOrientation';
+import { useMotion } from './useMotion';
 
 function App() {
 
   const [background, setBackground] = useState("transparent");
-
   const [state, setState] = useState<string | "started" | "idle" | "ended">("idle");
-
-
 
 
   const [time, setTime] = useState(-1);
@@ -72,131 +61,23 @@ function App() {
 
   const [moved, setMoved] = useState(false);
 
-  const [orientation, setOrientation] = useState({
-    alpha: 0,
-    beta: 0,
-    gamma: 0,
-  });
-  const [motion, setMotion] = useState({
-    x: 0,
-    y: 0,
-    z: 0,
-  });
 
   useEffect(() => {
     document.body.style.backgroundColor = background;
   }, [background]);
 
-  useEffect(() => {
+  useOrientation(state, () => {
+    setBackground("red");
+    setMoved(true);
+    setTime(-1);
+    setState("ended");
+  });
 
-    if (iOS) {
-      requestOrientationPermission!().then((response) => {
-        if (response === 'granted') {
-          window.addEventListener("deviceorientation", handleOrientation);
-        }
-      });
-    }
-
-
-    const handleOrientation = (event: DeviceOrientationEvent) => {
-      const { alpha, beta, gamma } = event!;
-      if (alpha === null || beta === null || gamma === null) {
-        return;
-      }
-
-
-      if (state === "countdown" || state === "idle") {
-        setOrientation({
-          alpha,
-          beta,
-          gamma,
-        });
-
-        return;
-      }
-
-
-
-
-      const previousOrientation = orientation;
-
-      // if any of the orientation values difference is greater than 20, then the user moved the device
-
-      const threshold = 28;
-
-      if (
-        Math.abs(previousOrientation.alpha - alpha) > threshold ||
-        Math.abs(previousOrientation.beta - beta) > threshold ||
-        Math.abs(previousOrientation.gamma - gamma) > threshold
-      ) {
-        setBackground("red");
-        setMoved(true);
-        setTime(-1);
-        setState("ended");
-      }
-    }
-
-
-    window.addEventListener("deviceorientation", handleOrientation);
-
-
-    return () => {
-      window.removeEventListener("deviceorientation", handleOrientation);
-    };
-  }, [orientation, time, state]);
-
-  useEffect(() => {
-    if (iOSMotion) {
-      requestMotionPermission!().then((response) => {
-        if (response === 'granted') {
-          window.addEventListener("devicemotion", handleMotion);
-        }
-      });
-
-      return;
-    }
-
-    const handleMotion = (event: DeviceMotionEvent) => {
-      const { x, y, z } = (event as DeviceMotionEvent).acceleration!;
-
-      if (x === null || y === null || z === null) {
-        return;
-      }
-
-
-      if (state === "countdown" || state === "idle") {
-        setMotion({
-          x,
-          y,
-          z,
-        });
-
-        return;
-      }
-
-      const previousMotion = motion;
-
-      // if any of the orientation values difference is greater than 20, then the user moved the device
-
-      const threshold = 5;
-
-      if (
-        Math.abs(previousMotion.x - x) > threshold ||
-        Math.abs(previousMotion.y - y) > threshold ||
-        Math.abs(previousMotion.z - z) > threshold
-      ) {
-        setBackground("red");
-        setMoved(true);
-        setTime(-1);
-        setState("ended");
-      }
-    }
-
-    window.addEventListener("devicemotion", handleMotion);
-
-    return () => {
-      window.removeEventListener("devicemotion", () => { });
-    };
+  useMotion(state, () => {
+    setBackground("red");
+    setMoved(true);
+    setTime(-1);
+    setState("ended");
   });
 
   useEffect(() => {
