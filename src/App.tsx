@@ -14,10 +14,20 @@ const iOSMotion = typeof requestMotionPermission === 'function';
 function App() {
 
   const [background, setBackground] = useState("transparent");
-  const [started, setStarted] = useState(false);
+
+  const [state, setState] = useState("idle");
+
+
+
 
   const [time, setTime] = useState(-1);
+  const [countdownTime, setCountdownTime] = useState(3);
+
   useEffect(() => {
+    if (state !== "started") {
+      return;
+    }
+
     let timer = setInterval(() => {
       setTime((time) => {
         if (time === 0) {
@@ -30,8 +40,34 @@ function App() {
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [state]);
 
+  useEffect(() => {
+    if (state !== "countdown") {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdownTime((time) => {
+        console.log(time);
+
+        if (time === 1) {
+          clearInterval(timer);
+
+          setTime(10);
+          setState("started");
+          return 0;
+        }
+
+
+        return time - 1;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [state, countdownTime]);
 
 
   const [moved, setMoved] = useState(false);
@@ -51,61 +87,61 @@ function App() {
     document.body.style.backgroundColor = background;
   }, [background]);
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   if (iOS) {
-  //     requestPermission!().then((response) => {
-  //       if (response === 'granted') {
-  //         window.addEventListener("deviceorientation", handleOrientation);
-  //       }
-  //     });
-  //   }
-
-
-  //   const handleOrientation = (event: DeviceOrientationEvent) => {
-  //     const { alpha, beta, gamma } = event!;
-  //     if (alpha === null || beta === null || gamma === null) {
-  //       return;
-  //     }
+    if (iOS) {
+      requestOrientationPermission!().then((response) => {
+        if (response === 'granted') {
+          window.addEventListener("deviceorientation", handleOrientation);
+        }
+      });
+    }
 
 
-  //     if (!started) {
-  //       setOrientation({
-  //         alpha,
-  //         beta,
-  //         gamma,
-  //       });
-
-  //       return;
-  //     }
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      const { alpha, beta, gamma } = event!;
+      if (alpha === null || beta === null || gamma === null) {
+        return;
+      }
 
 
-  //     const previousOrientation = orientation;
+      if (state === "idle") {
+        setOrientation({
+          alpha,
+          beta,
+          gamma,
+        });
 
-  //     // if any of the orientation values difference is greater than 20, then the user moved the device
-
-  //     const threshold = 28;
-
-  //     if (
-  //       Math.abs(previousOrientation.alpha - alpha) > threshold ||
-  //       Math.abs(previousOrientation.beta - beta) > threshold ||
-  //       Math.abs(previousOrientation.gamma - gamma) > threshold
-  //     ) {
-  //       setBackground("red");
-  //       setMoved(true);
-  //       setTime(-1);
-  //       setStarted(false);
-  //     }
-  //   }
+        return;
+      }
 
 
-  //   window.addEventListener("deviceorientation", handleOrientation);
+      const previousOrientation = orientation;
+
+      // if any of the orientation values difference is greater than 20, then the user moved the device
+
+      const threshold = 28;
+
+      if (
+        Math.abs(previousOrientation.alpha - alpha) > threshold ||
+        Math.abs(previousOrientation.beta - beta) > threshold ||
+        Math.abs(previousOrientation.gamma - gamma) > threshold
+      ) {
+        setBackground("red");
+        setMoved(true);
+        setTime(-1);
+        setState("idle");
+      }
+    }
 
 
-  //   return () => {
-  //     window.removeEventListener("deviceorientation", handleOrientation);
-  //   };
-  // }, [orientation, time, started]);
+    window.addEventListener("deviceorientation", handleOrientation);
+
+
+    return () => {
+      window.removeEventListener("deviceorientation", handleOrientation);
+    };
+  }, [orientation, time, state]);
 
   useEffect(() => {
     if (iOSMotion) {
@@ -124,7 +160,7 @@ function App() {
       }
 
 
-      if (!started) {
+      if (state === "idle") {
         setMotion({
           x,
           y,
@@ -148,7 +184,7 @@ function App() {
         setBackground("red");
         setMoved(true);
         setTime(-1);
-        setStarted(false);
+        setState("idle");
       }
     }
 
@@ -160,17 +196,26 @@ function App() {
   });
 
   useEffect(() => {
-    if (started && time <= 0 && !moved) {
+    if (state === "started" && time <= 0 && !moved) {
       setBackground("green");
-      setStarted(false);
+      setState("idle");
     }
-  }, [time, moved, started]);
+  }, [time, moved, state]);
 
 
   return (
     <>
+
       {
-        moved && (
+        state === "started" && (
+          <div className="card">
+            <h1>Ongoing</h1>
+          </div>
+        )
+      }
+
+      {
+        state === "idle" && moved && (
           <div className="card">
             <h1>You moved!</h1>
           </div>
@@ -178,34 +223,28 @@ function App() {
       }
 
       {
-        false && (
+        state === "idle" && !moved && (
           <div className="card">
-            <h1>Device Orientation</h1>
-            <p>Alpha: {orientation.alpha}</p>
-            <p>Beta: {orientation.beta}</p>
-            <p>Gamma: {orientation.gamma}</p>
+            <h1>Passed</h1>
           </div>
         )
       }
 
       {
-        true && (
+        state === "countdown" && (
           <div className="card">
-            <h1>Device Motion</h1>
-            <p>X: {motion.x}</p>
-            <p>Y: {motion.y}</p>
-            <p>Z: {motion.z}</p>
+            <h1>{countdownTime}</h1>
           </div>
         )
       }
 
       {
-        time > 0 && (
+        state === "started" && time > 0 && (
           <div className="card">
             <h1>{time}</h1>
             <button onClick={() => {
               setTime(-1);
-              setStarted(false);
+              setState("idle");
               setBackground("transparent");
             }}>
               Stop Timer
@@ -221,7 +260,8 @@ function App() {
           setTime(10);
           setMoved(false);
           setBackground("transparent");
-          setStarted(true);
+          setState("countdown");
+          setCountdownTime(3);
         }}>
           Start test
         </button>
