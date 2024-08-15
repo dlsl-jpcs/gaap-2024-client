@@ -15,7 +15,7 @@ function App() {
 
   const [background, setBackground] = useState("transparent");
 
-  const [state, setState] = useState("idle");
+  const [state, setState] = useState<string | "started" | "idle" | "ended">("idle");
 
 
 
@@ -105,7 +105,7 @@ function App() {
       }
 
 
-      if (state !== "started") {
+      if (state === "countdown" || state === "idle") {
         setOrientation({
           alpha,
           beta,
@@ -114,6 +114,8 @@ function App() {
 
         return;
       }
+
+
 
 
       const previousOrientation = orientation;
@@ -160,7 +162,7 @@ function App() {
       }
 
 
-      if (state !== "started") {
+      if (state === "countdown" || state === "idle") {
         setMotion({
           x,
           y,
