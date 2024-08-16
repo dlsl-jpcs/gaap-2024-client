@@ -32,14 +32,12 @@ export function useMotion(state: string, onThreshold: () => void) {
                 setMotion({ x, y, z });
                 return;
             }
-
-            const previousMotion = motion;
             const threshold = 5;
 
             if (
-                Math.abs(previousMotion.x - x) > threshold ||
-                Math.abs(previousMotion.y - y) > threshold ||
-                Math.abs(previousMotion.z - z) > threshold
+                x > threshold ||
+                y > threshold ||
+                z > threshold
             ) {
                 callback.current();
             }

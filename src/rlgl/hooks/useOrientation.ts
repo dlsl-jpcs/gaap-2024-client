@@ -33,7 +33,7 @@ export function useOrientation(state: string, onThreshold: () => void) {
             }
 
             const previousOrientation = orientation;
-            const threshold = 28;
+            const threshold = 1.5;
 
             if (
                 Math.abs(previousOrientation.alpha - alpha) > threshold ||
@@ -58,4 +58,6 @@ export function useOrientation(state: string, onThreshold: () => void) {
             window.removeEventListener("deviceorientation", handleOrientation);
         };
     }, [state, orientation]);
+
+    return orientation;
 }
