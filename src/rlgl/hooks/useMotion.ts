@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { GameState } from "../Game";
 
 interface DeviceMotionEventiOS extends DeviceMotionEvent {
     requestPermission?: () => Promise<'granted' | 'denied'>;
@@ -8,7 +9,7 @@ const requestMotionPermission = (DeviceMotionEvent as unknown as DeviceMotionEve
 const iOSMotion = typeof requestMotionPermission === 'function';
 
 
-export function useMotion(state: string, onThreshold: () => void) {
+export function useMotion(state: GameState, onThreshold: (difference: number) => void) {
     const [motion, setMotion] = useState({
         x: 0,
         y: 0,
@@ -28,20 +29,22 @@ export function useMotion(state: string, onThreshold: () => void) {
                 return;
             }
 
-            if (state === "countdown" || state === "idle") {
+            if (state === GameState.countdown || state === GameState.idle) {
                 setMotion({ x, y, z });
                 return;
             }
-            const threshold = 5;
+            const threshold = 2;
 
-            if (
-                x > threshold ||
-                y > threshold ||
-                z > threshold
-            ) {
-                callback.current();
+            const toCheck = [
+                Math.abs(x),
+                Math.abs(y),
+                Math.abs(z),
+            ];
+
+            const difference = Math.max(...toCheck);
+            if (difference > threshold) {
+                callback.current(difference);
             }
-
         }
 
         if (iOSMotion) {

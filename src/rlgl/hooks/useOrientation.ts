@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { GameState } from '../Game';
 
 interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
     requestPermission?: () => Promise<'granted' | 'denied'>;
@@ -7,7 +8,8 @@ interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
 const requestOrientationPermission = (DeviceOrientationEvent as unknown as DeviceOrientationEventiOS).requestPermission;
 const iOS = typeof requestOrientationPermission === 'function';
 
-export function useOrientation(state: string, onThreshold: () => void) {
+
+export function useOrientation(state: GameState, onThreshold: (previous: number, difference: number, debugData: string) => void) {
     const [orientation, setOrientation] = useState({
         alpha: 0,
         beta: 0,
@@ -19,6 +21,7 @@ export function useOrientation(state: string, onThreshold: () => void) {
         callback.current = onThreshold;
     });
 
+
     useEffect(() => {
 
         const handleOrientation = (event: DeviceOrientationEvent) => {
@@ -26,21 +29,39 @@ export function useOrientation(state: string, onThreshold: () => void) {
             if (alpha === null || beta === null || gamma === null) {
                 return;
             }
+            if (alpha === 0 && beta === 0 && gamma === 0) {
+                return;
+            }
 
-            if (state === "countdown" || state === "idle") {
+            if (state === GameState.countdown || state === GameState.idle) {
                 setOrientation({ alpha, beta, gamma });
                 return;
             }
 
-            const previousOrientation = orientation;
-            const threshold = 1.5;
+            if (state === GameState.ended) {
+                return;
+            }
 
-            if (
-                Math.abs(previousOrientation.alpha - alpha) > threshold ||
-                Math.abs(previousOrientation.beta - beta) > threshold ||
-                Math.abs(previousOrientation.gamma - gamma) > threshold
-            ) {
-                callback.current();
+            const previousOrientation = orientation;
+            const threshold = 5;
+
+            let previousNumbers = [
+                previousOrientation.alpha,
+                previousOrientation.beta,
+                previousOrientation.gamma
+            ];
+            let currentNumbers = [
+                alpha,
+                beta,
+                gamma
+            ];
+
+            for (let i = 0; i < 3; i++) {
+                let difference = currentNumbers[i] - previousNumbers[i];
+                const debugData = `Previous: ${previousNumbers[i]}, Current: ${currentNumbers[i]}, Difference: ${difference}`;
+                if (difference > threshold) {
+                    callback?.current(previousNumbers[i], difference, debugData);
+                }
             }
         };
 
@@ -60,4 +81,12 @@ export function useOrientation(state: string, onThreshold: () => void) {
     }, [state, orientation]);
 
     return orientation;
+}
+
+export function requestOrientationPermissioniOS() {
+    return requestOrientationPermission!();
+}
+
+export function orientationPermissionsRequired() {
+    return iOS;
 }
