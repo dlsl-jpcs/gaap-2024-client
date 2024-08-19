@@ -11,10 +11,17 @@ type MoveData = {
 }
 
 export enum GameState {
+    // waiting for game to start
     idle,
+
+    // unused, but could be used to show a countdown later
     countdown,
-    started,
-    ended,
+
+    // red light, client's will be listening for motion and orientation
+    redLight,
+
+
+    greenLight,
     eliminated
 }
 
@@ -48,7 +55,7 @@ function Game(
     return (
         <>
             {
-                props.state === GameState.started && (
+                props.state === GameState.redLight && (
                     <div className="card">
                         <h1>RED LIGHT</h1>
                     </div>
@@ -56,7 +63,7 @@ function Game(
             }
 
             {
-                props.state === GameState.ended && moved && (
+                props.state === GameState.greenLight && moved && (
                     <div className="card">
                         <h1>Failed</h1>
                     </div>
@@ -64,7 +71,7 @@ function Game(
             }
 
             {
-                props.state === GameState.ended && !moved && (
+                props.state === GameState.greenLight && !moved && (
                     <div className="card">
                         <h1>Passed</h1>
                     </div>

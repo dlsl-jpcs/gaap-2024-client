@@ -38,7 +38,7 @@ export function useOrientation(state: GameState, onThreshold: (previous: number,
                 return;
             }
 
-            if (state === GameState.ended) {
+            if (state === GameState.greenLight) {
                 return;
             }
 

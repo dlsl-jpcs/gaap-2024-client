@@ -51,7 +51,7 @@ export function App() {
 
         if (data.type === 'sync') {
           if (data.gameState === "red") {
-            setState(GameState.started);
+            setState(GameState.redLight);
             setBackground("red");
           } else if (data.gameState === "green") {
             setState(GameState.idle);
@@ -77,7 +77,7 @@ export function App() {
           if (stringState === "idle") {
             setState(GameState.idle);
           } else if (stringState === "started") {
-            setState(GameState.started);
+            setState(GameState.redLight);
             // vibrate
             window.navigator.vibrate(200);
           }
@@ -118,7 +118,7 @@ export function App() {
       setBackground("transparent");
     }
 
-    if (state === GameState.started) {
+    if (state === GameState.redLight) {
       setBackground("red");
     }
 
