@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { orientationPermissionsRequired, requestOrientationPermissioniOS, useOrientation } from "../rlgl/hooks/useOrientation";
 import { GameState } from "../rlgl/Game";
 import { App } from "../home/App";
 
 type PermissionState = "granted" | "denied" | "waiting"
 
-export function Permissions() {
+export function Permissions(
+    props: PropsWithChildren
+) {
     const orientation = useOrientation(GameState.idle, () => { });
 
     const [permissionState, setPermissionState] = useState<PermissionState>("waiting");
@@ -30,7 +32,7 @@ export function Permissions() {
     return (
         <>
             {permissionState === "granted" && (
-                <App></App>
+                props.children
             )}
 
 

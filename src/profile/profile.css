@@ -1,0 +1,66 @@
+body {
+    height: 100vh;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.section-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+/* Outlined */
+.section-container .card {
+    border: 1px solid var(--outline-color);
+    border-radius: 8px;
+
+    padding-left: 1em;
+    padding-right: 1em;
+
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+
+    transition: 0.3s;
+}
+
+/* hover */
+.section-container .card:hover {
+    background-color: var(--hover-color);
+}
+
+.section-container input {
+    border: 1px solid var(--outline-color);
+    border-radius: 8px;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    transition: 0.3s;
+    min-height: 2.5em;
+
+
+    font-size: x-large;
+
+    /* numbers only */
+    text-align: start;
+
+    appearance: textfield;
+}
+
+.section-container input::-webkit-outer-spin-button,
+.section-container input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.section-container input:focus {
+    outline: none;
+}
+
+.error {
+    color: var(--error-color);
+}

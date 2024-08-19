@@ -7,8 +7,6 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
-  /* disable scroll */
-  overscroll-behavior: none;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -16,14 +14,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
 a {
   font-weight: 500;
-  color: #646cff;
   text-decoration: inherit;
 }
 
-a:hover {
-  color: #535bf2;
+button:hover {
+  background-color: var(--hover-color);
 }
 
 body {
@@ -48,29 +46,37 @@ button {
   font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
 
-button:hover {
-  border-color: #646cff;
-}
 
-button:focus,
+/* button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+} */
 
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
-  }
 
-  a:hover {
-    color: #747bff;
+    --outline-color: #979797;
+    --hover-color: #e4e4e4;
+    --error-color: #ff4d4f;
   }
 
   button {
     background-color: #f9f9f9;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
+
+    --outline-color: #5e5e5e;
+    --hover-color: #3a3a3a;
+    --error-color: #ff4d4f;
   }
 }

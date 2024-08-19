@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import Game, { GameState } from "../rlgl/Game";
 import { requestOrientationPermissioniOS } from "../rlgl/hooks/useOrientation";
+import { UserProfile } from "../profile/profile";
 
-export function App() {
+export function App(
+  props: {
+    profile: UserProfile
+  }
+) {
   const [background, setBackground] = useState("transparent");
   const [state, setState] = useState(GameState.idle);
 
@@ -11,18 +16,8 @@ export function App() {
 
 
 
-  const [userId, _] = useState(() => {
-    if (localStorage.getItem("userId") === "0") {
-      localStorage.removeItem("userId");
-    }
-    if (localStorage.getItem("userId")) {
-      return parseInt(localStorage.getItem("userId")!);
-    } else {
-      const newUserId = Math.floor(Math.random() * 1000000);
-      localStorage.setItem("userId", newUserId.toString());
-      return newUserId;
-    }
-  });
+  const userId = props.profile.studentId;
+
 
 
   const hostname = "vhk7fc12-3000.asse.devtunnels.ms/rlgl";
