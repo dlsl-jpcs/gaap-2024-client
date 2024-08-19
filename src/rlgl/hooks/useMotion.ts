@@ -29,7 +29,7 @@ export function useMotion(state: GameState, onThreshold: (difference: number) =>
                 return;
             }
 
-            if (state === GameState.countdown || state === GameState.idle) {
+            if (state === GameState.countdown || state === GameState.idle || state === GameState.greenLight) {
                 setMotion({ x, y, z });
                 return;
             }

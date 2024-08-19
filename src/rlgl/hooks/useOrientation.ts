@@ -33,12 +33,8 @@ export function useOrientation(state: GameState, onThreshold: (previous: number,
                 return;
             }
 
-            if (state === GameState.countdown || state === GameState.idle) {
+            if (state === GameState.countdown || state === GameState.idle || state === GameState.greenLight) {
                 setOrientation({ alpha, beta, gamma });
-                return;
-            }
-
-            if (state === GameState.greenLight) {
                 return;
             }
 

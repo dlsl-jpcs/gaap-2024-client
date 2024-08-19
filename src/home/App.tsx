@@ -52,17 +52,15 @@ export function App() {
         if (data.type === 'sync') {
           if (data.gameState === "red") {
             setState(GameState.redLight);
-            setBackground("red");
           } else if (data.gameState === "green") {
+            setState(GameState.greenLight);
+          } else {
             setState(GameState.idle);
-            setBackground("green");
           }
+
           if (data.eliminated === true) {
             setState(GameState.eliminated);
             setBackground("orange");
-          } else {
-            setState(GameState.idle);
-            setBackground("transparent");
           }
         }
 
@@ -116,10 +114,10 @@ export function App() {
   useEffect(() => {
     if (state === GameState.idle) {
       setBackground("transparent");
-    }
-
-    if (state === GameState.redLight) {
+    } else if (state === GameState.redLight) {
       setBackground("red");
+    } else if (state === GameState.greenLight) {
+      setBackground("green");
     }
 
 
