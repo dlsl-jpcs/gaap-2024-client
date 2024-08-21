@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { GameState } from "../Game";
+import { GameState } from '../GameState';
 
 interface DeviceMotionEventiOS extends DeviceMotionEvent {
     requestPermission?: () => Promise<'granted' | 'denied'>;
@@ -33,7 +33,7 @@ export function useMotion(state: GameState, onThreshold: (difference: number) =>
                 setMotion({ x, y, z });
                 return;
             }
-            const threshold = 2;
+            const threshold = 3;
 
             const toCheck = [
                 Math.abs(x),

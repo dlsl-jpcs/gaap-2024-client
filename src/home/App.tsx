@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import Game, { GameState } from "../rlgl/Game";
+import Game from "../rlgl/Game";
+import { GameState } from '../rlgl/GameState';
 import { requestOrientationPermissioniOS } from "../rlgl/hooks/useOrientation";
 import { UserProfile } from "../profile/profile";
 
@@ -12,8 +13,6 @@ export function App(
   const [state, setState] = useState(GameState.idle);
 
   const [userCount, setUserCount] = useState(0);
-
-
 
 
   const userId = props.profile.studentId;
@@ -69,10 +68,10 @@ export function App(
 
           if (stringState === "idle") {
             setState(GameState.idle);
-          } else if (stringState === "started") {
+          } else if (stringState === "red") {
             setState(GameState.redLight);
-            // vibrate
-            window.navigator.vibrate(200);
+          } else if (stringState === "green") {
+            setState(GameState.greenLight);
           }
         }
       };
@@ -83,6 +82,8 @@ export function App(
 
       websocket.onclose = () => {
         console.log("WebSocket closed");
+
+        setState(GameState.idle);
 
         // reconnect
         console.log("Reconnecting in 2 seconds...");

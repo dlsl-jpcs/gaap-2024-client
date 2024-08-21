@@ -1,31 +1,9 @@
-import { useState, useEffect, SetStateAction, Dispatch } from 'react';
+import { useState, useEffect, SetStateAction, Dispatch, useRef } from 'react';
 import './Game.css';
 import { useMotion as useMotionDetector } from './hooks/useMotion';
 import { useOrientation as useOrientationDetector } from './hooks/useOrientation';
+import { GameState } from './GameState';
 
-type MoveData = {
-    type: string | "orientation" | "motion";
-    difference: number;
-    previous?: number;
-    debug?: string;
-}
-
-export enum GameState {
-    // waiting for game to start
-    idle,
-
-    // unused, but could be used to show a countdown later
-    countdown,
-
-    // red light, clients will be listening for motion and orientation
-    redLight,
-
-    // green light, client's will not be listening for motion and orientation
-    greenLight,
-
-    // this client is eliminated and should not be listening for motion and orientation
-    eliminated
-}
 
 function Game(
     props: {
@@ -33,9 +11,13 @@ function Game(
         ws: WebSocket
     }
 ) {
-    const [moved, setMoved] = useState<MoveData | null>(null);
+    const moved = useRef(false);
 
     useOrientationDetector(props.state, (prev, diff, debugData) => {
+        if (moved.current) {
+            return;
+        }
+        moved.current = true;
         props.ws.send(JSON.stringify({
             type: "moved",
             cause: "orientation",
@@ -46,12 +28,16 @@ function Game(
     });
 
     useMotionDetector(props.state, (difference) => {
+        if (moved.current) {
+            return;
+        }
+        moved.current = true;
         props.ws.send(JSON.stringify({
             type: "moved",
             cause: "motion",
+            difference: difference
         }));
     });
-
 
 
     return (
@@ -67,7 +53,7 @@ function Game(
             {
                 props.state === GameState.greenLight && moved && (
                     <div className="card">
-                        <h1>Failed</h1>
+                        <h1>GREEN LIGHT</h1>
                     </div>
                 )
             }
@@ -79,12 +65,6 @@ function Game(
                     </div>
                 )
             }
-
-
-
-            <p className="read-the-docs">
-                JPCS Device Motion Test
-            </p>
         </>
     )
 }

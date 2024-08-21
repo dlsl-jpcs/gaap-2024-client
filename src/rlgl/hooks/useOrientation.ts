@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { GameState } from '../Game';
+import { GameState } from '../GameState';
 
 interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
     requestPermission?: () => Promise<'granted' | 'denied'>;

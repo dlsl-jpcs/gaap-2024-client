@@ -47,7 +47,7 @@ function ProfileForm(
         onProfileFilled: (profile: UserProfile) => void;
     }
 ) {
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(2);
 
     const [section, setSection] = useState<"cs" | "it" | "emc" | "act">("cs");
     const [year, setYear] = useState(1);

@@ -4,9 +4,20 @@ import './index.css'
 import { App } from './home/App'
 import Permissions from './permissions/permissions'
 import { Profile } from './profile/profile'
+import { Spectator } from './spectator/Spectator'
 
-createRoot(document.getElementById('root')!).render(
-  <Permissions>
-    <Profile />
-  </Permissions>
-)
+const spectator = new URLSearchParams(window.location.search).get('spectator') === 'true'
+
+const root = createRoot(document.getElementById('root')!)
+
+if (spectator) {
+  root.render(
+    <Spectator />
+  )
+} else {
+  root.render(
+    <Permissions>
+      <Profile />
+    </Permissions>
+  )
+}
