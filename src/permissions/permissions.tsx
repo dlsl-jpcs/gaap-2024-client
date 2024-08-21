@@ -5,11 +5,17 @@ import { App } from "../home/App";
 
 type PermissionState = "granted" | "denied" | "waiting"
 
+/**
+ * Ensure that the user has granted motion permissions before proceeding to the app
+ * Applies only on iOS devices
+ * 
+ * IMPORTANT: Threre's currently no way to request permissions again after they have been denied,
+ * we're going to rely on marshalls on site to remind them to grant permissions
+ */
 export function Permissions(
     props: PropsWithChildren
 ) {
     const orientation = useOrientation(GameState.idle, () => { });
-
     const [permissionState, setPermissionState] = useState<PermissionState>("waiting");
 
 
@@ -25,8 +31,6 @@ export function Permissions(
             setPermissionState("denied");
         }
     }, [orientation]);
-
-
 
 
     return (

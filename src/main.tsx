@@ -6,8 +6,9 @@ import Permissions from './permissions/permissions'
 import { Profile } from './profile/profile'
 import { Spectator } from './spectator/Spectator'
 
-const spectator = new URLSearchParams(window.location.search).get('spectator') === 'true'
+// there's probably a better way to do this, but for now, this will do D:
 
+const spectator = new URLSearchParams(window.location.search).get('spectator') === 'true'
 const root = createRoot(document.getElementById('root')!)
 
 if (spectator) {

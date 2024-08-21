@@ -42,6 +42,9 @@ export function Profile() {
     );
 }
 
+/**
+ * Only Student ID is used here, ill probably remove them later
+ */
 function ProfileForm(
     props: {
         onProfileFilled: (profile: UserProfile) => void;

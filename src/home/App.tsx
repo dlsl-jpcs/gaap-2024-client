@@ -4,38 +4,32 @@ import { GameState } from '../rlgl/GameState';
 import { requestOrientationPermissioniOS } from "../rlgl/hooks/useOrientation";
 import { UserProfile } from "../profile/profile";
 
+const hostname = "vhk7fc12-3000.asse.devtunnels.ms/rlgl";
+const url = "wss://" + hostname;
+
+/**
+ * The Red Light Green Light game, this contains the logic for handling game states
+ * but the movement detection and orientation detection is handled in the @see {Game} component
+ */
 export function App(
   props: {
     profile: UserProfile
   }
 ) {
   const [background, setBackground] = useState("transparent");
-
-
   const [state, setState] = useState(GameState.idle);
-
-
   const [userCount, setUserCount] = useState(0);
-
-
   const userId = props.profile.studentId;
-
-
-
-  const hostname = "vhk7fc12-3000.asse.devtunnels.ms/rlgl";
-  const url = "wss://" + hostname;
   const [websocket, setWebSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
 
     function setupWebsocket(websocket: WebSocket) {
       websocket.onopen = () => {
-        console.log("WebSocket connected");
+
       };
 
       websocket.onmessage = (event) => {
-        console.log("WebSocket message received:", event.data);
-
         const data = JSON.parse(event.data);
         if (data.type === "color") {
           setBackground(data.color);
@@ -75,10 +69,17 @@ export function App(
           if (stringState === "idle") {
             setState(GameState.idle);
           } else if (stringState === "red") {
+
+
+            // Allow a little time for the user to react to the red light
+            // before detecting movement
+            // though we need to set the state to red light immediately to warn them
             setBackground("#E91229");
             setTimeout(() => {
               setState(GameState.redLight);
             }, 1000);
+
+
           } else if (stringState === "green") {
             setState(GameState.greenLight);
           }
@@ -116,6 +117,7 @@ export function App(
     };
   }, []);
 
+  // side effect to change the background color based on the game state
   useEffect(() => {
     if (state === GameState.idle) {
       setBackground("transparent");

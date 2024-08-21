@@ -11,6 +11,7 @@ function Game(
         ws: WebSocket
     }
 ) {
+    // used as a debounce to prevent multiple messages from being sent
     const moved = useRef(false);
 
     useOrientationDetector(props.state, (prev, diff, debugData) => {
