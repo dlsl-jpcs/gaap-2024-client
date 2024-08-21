@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 
+import "./spectator.css";
+import JPCS from "../assets/jpcs_logo.png";
+import leftYear from "../assets/left-year.png";
+import rightYear from "../assets/right-year.png"
+import topYear from "../assets/top-year.png";
+import TextTransition, { presets } from "react-text-transition";
+
 export function Spectator() {
 
     const [eliminatedList, setEliminatedList] = useState<number[]>([]);
@@ -40,7 +47,7 @@ export function Spectator() {
                         setEliminatedList((prev) => {
                             return prev.filter((i) => i !== id);
                         });
-                    }, 5000);
+                    }, 2000);
                 } else if (data.type === "join") {
                     const email = data.email;
                     const course = data.course;
@@ -93,33 +100,54 @@ export function Spectator() {
 
 
     return (
-        <>
+        <div className="spectator">
+            <img src={leftYear} alt="" className="left-year" />
+            <img src={rightYear} alt="" className="right-year" />
+            <img src={topYear} alt="" className="top-year" />
 
-            {eliminatedList.length > 0 && (
-                <>
-                    <h1>Eliminated</h1>
-                    <ul>
-                        {eliminatedList[0]}
-                    </ul>
-                </>
-            )}
+            <WelcomeMessage user={usersList[0]} />
 
-            {usersList.length > 0 && (
-                <>
-                    <h1>Joined</h1>
-                    <ul>
-                        {usersList.map((u) => (
-                            <li key={u.id}>
-                                {u.email} - {u.course}
-                            </li>
-                        ))}
-                    </ul>
-                </>
-            )}
 
-        </>
+
+            <div className="gaap-footer">
+                <h2>GAAP 2024</h2>
+            </div>
+        </div>
     );
 }
+
+
+
+
+function WelcomeMessage(
+    props: {
+        user: { id: number; email: string; course: string } | null;
+    }
+) {
+    const title = props.user ? getNameFromEmail(props.user.email) : "General Assembly";
+    return (
+        <>
+            <img src={JPCS} alt="" />
+
+            <h1 className="spech1">
+                <TextTransition
+                    springConfig={presets.stiff}
+                >
+                    {title}
+                </TextTransition>
+            </h1>
+        </>
+    )
+}
+
+
+function getNameFromEmail(email: string) {
+    const emailPart = email.split("@")[0];
+    // split by _
+    const parts = emailPart.split("_");
+    return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+}
+
 
 function useSpectatorId() {
     return useState(() => {

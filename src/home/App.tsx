@@ -10,7 +10,10 @@ export function App(
   }
 ) {
   const [background, setBackground] = useState("transparent");
+
+
   const [state, setState] = useState(GameState.idle);
+
 
   const [userCount, setUserCount] = useState(0);
 
@@ -45,7 +48,10 @@ export function App(
 
         if (data.type === 'sync') {
           if (data.gameState === "red") {
-            setState(GameState.redLight);
+            setBackground("#E91229");
+            setTimeout(() => {
+              setState(GameState.redLight);
+            }, 1000);
           } else if (data.gameState === "green") {
             setState(GameState.greenLight);
           } else {
@@ -69,7 +75,10 @@ export function App(
           if (stringState === "idle") {
             setState(GameState.idle);
           } else if (stringState === "red") {
-            setState(GameState.redLight);
+            setBackground("#E91229");
+            setTimeout(() => {
+              setState(GameState.redLight);
+            }, 1000);
           } else if (stringState === "green") {
             setState(GameState.greenLight);
           }
@@ -111,12 +120,10 @@ export function App(
     if (state === GameState.idle) {
       setBackground("transparent");
     } else if (state === GameState.redLight) {
-      setBackground("red");
+      setBackground("#E91229");
     } else if (state === GameState.greenLight) {
       setBackground("green");
     }
-
-
   }, [state]);
 
   useEffect(() => {
