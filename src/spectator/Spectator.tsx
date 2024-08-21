@@ -7,6 +7,8 @@ import rightYear from "../assets/right-year.png"
 import topYear from "../assets/top-year.png";
 import TextTransition, { presets } from "react-text-transition";
 
+const BASE_PICTURE_URL = "https://mydcampus.dlsl.edu.ph/photo_id/"
+
 export function Spectator() {
 
     const [eliminatedList, setEliminatedList] = useState<number[]>([]);
@@ -128,6 +130,11 @@ function WelcomeMessage(
     return (
         <>
             <img src={JPCS} alt="" />
+
+            {props.user && (
+                <img src={BASE_PICTURE_URL + props.user?.id + ".JPG"} alt="" className="profile-picture" />
+            )}
+
 
             <h1 className="spech1">
                 <TextTransition

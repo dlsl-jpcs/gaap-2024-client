@@ -106,7 +106,7 @@ function StudentIdForm(
     const [studentId, setStudentId] = useState("");
 
     const isValidStudentId = (studentId: string) => {
-        return studentId.length === 10;
+        return true;
     }
 
     const [error, setError] = useState("");
