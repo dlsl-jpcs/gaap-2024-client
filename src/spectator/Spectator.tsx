@@ -22,6 +22,18 @@ type User = {
     trackId: string;
 }
 
+
+const fadeOutAudio = (audio: HTMLAudioElement) => {
+    const fadeStep = 0.05;
+    const fadeInterval = setInterval(() => {
+        if (audio.volume - fadeStep <= 0) {
+            clearInterval(fadeInterval);
+            return;
+        }
+        audio.volume -= fadeStep;
+    }, 100);
+};
+
 /**
  * The Spectator screen, primararily for displaying in the SENTRUM
  * 
@@ -32,6 +44,8 @@ export function Spectator() {
 
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [userQueue, setNameQueue] = useState<User[]>([]);
+
+
 
     useEffect(() => {
         if (currentUser === null && userQueue.length > 0) {
@@ -53,6 +67,10 @@ export function Spectator() {
                 setCurrentUser(null);
                 setAudio(null);
             }, duration);
+
+            setTimeout(() => {
+                fadeOutAudio(audio!);
+            }, duration - 1500);
         }
     }, [currentUser, userQueue]);
 
@@ -144,16 +162,7 @@ export function Spectator() {
             addToQueue({ id, email, course, trackId: "1uwg7BqqCx60EUA24WPB6c" });
         };
 
-        const fadeOutAudio = (audio: HTMLAudioElement) => {
-            const fadeStep = 0.05;
-            const fadeInterval = setInterval(() => {
-                if (audio.volume - fadeStep <= 0) {
-                    clearInterval(fadeInterval);
-                    return;
-                }
-                audio.volume -= fadeStep;
-            }, 100);
-        };
+
 
         const reconnectWebSocket = () => {
             const socket = new WebSocket(`${url}?userId=${spectatorId}&spectator=true`);
