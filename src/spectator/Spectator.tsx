@@ -15,22 +15,57 @@ const BASE_PICTURE_URL = "https://mydcampus.dlsl.edu.ph/photo_id/";
 const hostname = "vhk7fc12-3000.asse.devtunnels.ms/rlgl";
 const url = `wss://${hostname}`;
 
+type User = {
+    id: number;
+    email: string;
+    course: string;
+    trackId: string;
+}
 
 /**
  * The Spectator screen, primararily for displaying in the SENTRUM
  * 
  */
 export function Spectator() {
+
+    const duration = 15000;
+
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [userQueue, setNameQueue] = useState<User[]>([]);
+
+    useEffect(() => {
+        if (currentUser === null && userQueue.length > 0) {
+            const nextUser = userQueue[0];
+            setCurrentUser(nextUser);
+            setNameQueue(prevQueue => prevQueue.slice(1));
+
+            sdk?.tracks
+                .get(nextUser.trackId)
+                .then((track) => track.preview_url)
+                .then((url) => {
+                    if (!url) return;
+
+                    const audio = new Audio(url!);
+                    setAudio(audio);
+                });
+
+            setTimeout(() => {
+                setCurrentUser(null);
+                setAudio(null);
+            }, duration);
+        }
+    }, [currentUser, userQueue]);
+
+    const addToQueue = (user: User) => {
+        setNameQueue(prevQueue => [...prevQueue, user]);
+    }
+
+
     const sdk = useSpotify(
         import.meta.env.VITE_SPOTIFY_CLIENT_ID,
         import.meta.env.VITE_REDIRECT_TARGET,
         Scopes.all
     );
-
-    const [eliminatedList, setEliminatedList] = useState<number[]>([]);
-    const [usersList, setUsersList] = useState<
-        { id: number; email: string; course: string; audioUrl: string }[]
-    >([]);
 
     const [state, setState] = useState(GameState.idle);
     const [websocket, setWebSocket] = useState<WebSocket | null>(null);
@@ -74,14 +109,14 @@ export function Spectator() {
                 const data = JSON.parse(event.data);
 
                 if (data.type === "eliminated") {
-                    handleElimination(data.id);
+
                 } else if (data.type === "join") {
                     handleJoin(data);
                 } else if (data.type === "game_state") {
-                    const newState = data.state === "red" ? GameState.redLight : GameState.greenLight;
+                    const newState = data.state === "red" ? GameState.redLight : data.state === "green" ? GameState.greenLight : GameState.idle;
                     setState(newState);
                 } else if (data.type === "sync") {
-                    const newState = data.gameState === "red" ? GameState.redLight : GameState.greenLight;
+                    const newState = data.gameState === "red" ? GameState.redLight : data.state === "green" ? GameState.greenLight : GameState.idle;
                     setState(newState);
                 }
             };
@@ -93,20 +128,6 @@ export function Spectator() {
                 setTimeout(() => reconnectWebSocket(), 2000);
             };
         };
-
-        const handleElimination = (id: number) => {
-            setEliminatedList((prev) =>
-                prev.includes(id) ? prev : [...prev, id]
-            );
-            setTimeout(
-                () =>
-                    setEliminatedList((prev) =>
-                        prev.filter((i) => i !== id)
-                    ),
-                2000
-            );
-        };
-
 
         /**
          * Handle the join event from the websocket,
@@ -120,35 +141,7 @@ export function Spectator() {
                 return;
             }
             const { id, email, course } = data;
-
-            sdk.tracks
-                .get("1uwg7BqqCx60EUA24WPB6c")
-                .then((track) => track.preview_url)
-                .then((url) => {
-                    const timeout = 15000;
-
-                    setUsersList((prev) =>
-                        prev.find((u) => u.id === id)
-                            ? prev
-                            : [...prev, { id, email, course, audioUrl: url ?? "" }]
-                    );
-
-                    if (url) {
-                        const newAudio = new Audio(url);
-                        setAudio(newAudio);
-                        setTimeout(() => fadeOutAudio(newAudio), timeout - 2000);
-                    }
-
-                    setTimeout(() => removeUser(id), timeout);
-                });
-        };
-
-        const removeUser = (id: number) => {
-            setUsersList((prev) => prev.filter((u) => u.id !== id));
-            setAudio((prev) => {
-                prev?.pause();
-                return null;
-            });
+            addToQueue({ id, email, course, trackId: "1uwg7BqqCx60EUA24WPB6c" });
         };
 
         const fadeOutAudio = (audio: HTMLAudioElement) => {
@@ -185,7 +178,7 @@ export function Spectator() {
             <img src={rightYear} alt="" className="right-year" />
             <img src={topYear} alt="" className="top-year" />
 
-            {state === GameState.idle ? <WelcomeMessage user={usersList[0]} /> : <State state={state}></State>}
+            {state === GameState.idle ? <WelcomeMessage user={currentUser} /> : <State state={state}></State>}
 
             <div className="gaap-footer">
                 <h2>GAAP 2024</h2>
@@ -219,7 +212,8 @@ function State(
 
 
 function WelcomeMessage({ user }: { user: { id: number; email: string; course: string } | null }) {
-    const title = user ? getNameFromEmail(user.email) : "General Assembly";
+    let title = user ? getNameFromEmail(user.email) : "General Assembly";
+
     return (
         <>
             <img src={JPCS} alt="" />
