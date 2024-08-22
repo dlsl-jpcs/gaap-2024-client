@@ -5,20 +5,28 @@ import { App } from './home/App'
 import Permissions from './permissions/permissions'
 import { Profile } from './profile/profile'
 import { Spectator } from './spectator/Spectator'
+import { Admin } from './admin/Admin'
 
 // there's probably a better way to do this, but for now, this will do D:
 
-const spectator = new URLSearchParams(window.location.search).get('spectator') === 'true'
+const params = new URLSearchParams(window.location.search);
+const spectator = params.get('spectator') === 'true'
+const admin = params.get('admin') === 'true'
+
 const root = createRoot(document.getElementById('root')!)
 
-if (spectator) {
+if (admin) {
+  root.render(
+    <Admin></Admin>
+  );
+} else if (spectator) {
   root.render(
     <Spectator />
-  )
+  );
 } else {
   root.render(
     <Permissions>
       <Profile />
     </Permissions>
-  )
+  );
 }

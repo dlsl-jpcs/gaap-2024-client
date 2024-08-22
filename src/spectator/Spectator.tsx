@@ -7,6 +7,7 @@ import topYear from "../assets/top-year.png";
 import TextTransition, { presets } from "react-text-transition";
 import { useSpotify } from "./hooks/useSpotify";
 import { Scopes } from "@spotify/web-api-ts-sdk";
+import { GameState } from "../rlgl/GameState";
 
 
 // constants
@@ -30,6 +31,8 @@ export function Spectator() {
     const [usersList, setUsersList] = useState<
         { id: number; email: string; course: string; audioUrl: string }[]
     >([]);
+
+    const [state, setState] = useState(GameState.idle);
     const [websocket, setWebSocket] = useState<WebSocket | null>(null);
     const [spectatorId] = useSpectatorId();
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
@@ -74,6 +77,12 @@ export function Spectator() {
                     handleElimination(data.id);
                 } else if (data.type === "join") {
                     handleJoin(data);
+                } else if (data.type === "game_state") {
+                    const newState = data.state === "red" ? GameState.redLight : GameState.greenLight;
+                    setState(newState);
+                } else if (data.type === "sync") {
+                    const newState = data.gameState === "red" ? GameState.redLight : GameState.greenLight;
+                    setState(newState);
                 }
             };
 
@@ -107,6 +116,9 @@ export function Spectator() {
          * and additionally fade out the audio
          */
         const handleJoin = (data: any) => {
+            if (state !== GameState.idle) {
+                return;
+            }
             const { id, email, course } = data;
 
             sdk.tracks
@@ -172,12 +184,37 @@ export function Spectator() {
             <img src={leftYear} alt="" className="left-year" />
             <img src={rightYear} alt="" className="right-year" />
             <img src={topYear} alt="" className="top-year" />
-            <WelcomeMessage user={usersList[0]} />
+
+            {state === GameState.idle ? <WelcomeMessage user={usersList[0]} /> : <State state={state}></State>}
+
             <div className="gaap-footer">
                 <h2>GAAP 2024</h2>
             </div>
         </div>
     );
+}
+
+function State(
+    props: {
+        state: GameState;
+    }
+) {
+
+    useEffect(() => {
+        if (props.state === GameState.redLight) {
+            document.body.style.backgroundColor = "#E91229";
+        }
+
+        if (props.state === GameState.greenLight) {
+            document.body.style.backgroundColor = "#CFF469";
+        }
+    }, [props.state]);
+
+    const text = props.state === GameState.redLight ? "RED LIGHT" : "GREEN LIGHT";
+
+    return <>
+        <h1>{text}</h1>
+    </>
 }
 
 
