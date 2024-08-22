@@ -41,6 +41,12 @@ export function App(
         }
 
         if (data.type === 'sync') {
+          if (data.eliminated === true) {
+            setState(GameState.eliminated);
+            setBackground("orange");
+            return;
+          }
+
           if (data.gameState === "red") {
             setBackground("#E91229");
             setTimeout(() => {
@@ -52,10 +58,7 @@ export function App(
             setState(GameState.idle);
           }
 
-          if (data.eliminated === true) {
-            setState(GameState.eliminated);
-            setBackground("orange");
-          }
+
         }
 
         if (data.type === "eliminated") {
