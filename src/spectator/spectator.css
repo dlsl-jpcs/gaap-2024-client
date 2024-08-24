@@ -17,7 +17,7 @@
 body {
     display: flex;
     place-items: center;
-    font-family: 'Spotify';
+    font: 'Spotify';
     letter-spacing: 0rem;
     color: #503658;
     background-color: #CFF469;
