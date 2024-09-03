@@ -1,33 +1,26 @@
-import { useEffect, useState } from "react";
-import "./spectator.css";
-import JPCS from "../assets/jpcs_logo.png";
-import leftYear from "../assets/left-year.png";
-import rightYear from "../assets/right-year.png";
-import topYear from "../assets/top-year.png";
-import TextTransition, { presets } from "react-text-transition";
-import { useSpotify } from "./hooks/useSpotify";
+import { useCallback, useEffect, useState } from "react";
+import { HashTag } from "./hashtag";
+import { AnimationEndCallback } from "./utils";
+import { Year } from "./year";
+
+import "./styles.css";
 import { Scopes } from "@spotify/web-api-ts-sdk";
-import { GameState } from "../rlgl/GameState";
-import { TransitionsTest } from "./transitions/transitionsTest";
-
-
-// constants
-const BASE_PICTURE_URL = "https://mydcampus.dlsl.edu.ph/photo_id/";
-const hostname = "vhk7fc12-3000.asse.devtunnels.ms/rlgl";
-const url = `wss://${hostname}`;
+import { GameState } from "../../rlgl/GameState";
+import { useSpotify } from "../hooks/useSpotify";
+import { User } from "./user";
 
 type User = {
     id: number;
     email: string;
+    photo: string;
     course: string;
     trackId: string;
 }
 
-
 const fadeOutAudio = (audio: HTMLAudioElement) => {
     const fadeStep = 0.05;
     const fadeInterval = setInterval(() => {
-        if (audio.volume - fadeStep <= 0) {
+        if (!audio || audio.volume - fadeStep <= 0) {
             clearInterval(fadeInterval);
             return;
         }
@@ -35,54 +28,41 @@ const fadeOutAudio = (audio: HTMLAudioElement) => {
     }, 100);
 };
 
-/**
- * The Spectator screen, primararily for displaying in the SENTRUM
- * 
- */
-export function Spectator() {
-    if (true) {
-        return <>
-            <TransitionsTest />
-        </>
-    }
+const LOOP_ANIMATIONS = [
+    Year,
+    HashTag,
+]
 
-    const duration = 15000;
+type AnimationType = (props: {
+    onAnimateComplete: AnimationEndCallback;
+    user: { name: string, photo: string };
+}) => JSX.Element;
 
+const hostname = "vhk7fc12-3000.asse.devtunnels.ms/rlgl";
+const url = `wss://${hostname}`;
+const duration = 15000;
+
+export function TransitionsTest() {
+
+    // user handling stuff, such as queueing
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [userQueue, setNameQueue] = useState<User[]>([]);
 
+    const addToQueue = useCallback((user: User) => {
 
+        setNameQueue(prevQueue => {
+            console.log("Adding to queue");
+            return [...prevQueue, user];
+        });
+    }, [currentUser, userQueue]);
 
     useEffect(() => {
         if (currentUser === null && userQueue.length > 0) {
             const nextUser = userQueue[0];
             setCurrentUser(nextUser);
             setNameQueue(prevQueue => prevQueue.slice(1));
-
-            sdk?.tracks
-                .get(nextUser.trackId)
-                .then((track) => track.preview_url)
-                .then((url) => {
-                    if (!url) return;
-
-                    const audio = new Audio(url!);
-                    setAudio(audio);
-                });
-
-            setTimeout(() => {
-                setCurrentUser(null);
-                setAudio(null);
-            }, duration);
-
-            setTimeout(() => {
-                fadeOutAudio(audio!);
-            }, duration - 1500);
         }
     }, [currentUser, userQueue]);
-
-    const addToQueue = (user: User) => {
-        setNameQueue(prevQueue => [...prevQueue, user]);
-    }
 
 
     const sdk = useSpotify(
@@ -95,7 +75,6 @@ export function Spectator() {
     const [websocket, setWebSocket] = useState<WebSocket | null>(null);
     const [spectatorId] = useSpectatorId();
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-
 
     // when a new user joins, the handleJoin function is called
     // and as a side effect of that function, a user is added to the list and
@@ -121,6 +100,7 @@ export function Spectator() {
         };
     }, [audio]);
 
+    // websocket handling
     useEffect(() => {
         // shouldn't be possible, but just in case :D
         if (!sdk) return;
@@ -165,7 +145,16 @@ export function Spectator() {
                 return;
             }
             const { id, email, course } = data;
-            addToQueue({ id, email, course, trackId: "1uwg7BqqCx60EUA24WPB6c" });
+
+
+            const userData = {
+                id: data.id,
+                email: data.email,
+                course: data.course,
+                trackId: data.track,
+                photo: ""
+            }
+            addToQueue(userData);
         };
 
 
@@ -183,62 +172,100 @@ export function Spectator() {
         return () => {
             websocket?.close();
         };
-    }, [sdk]);
+    }, [sdk])
 
-    if (!sdk) return <div>Loading...</div>;
+    // animations
+    const [animations, setAnimations] = useState<AnimationType[]>(LOOP_ANIMATIONS);
+    const [animationIndex, setAnimationIndex] = useState(0);
+    const [previousBackground, setPreviousBackground] = useState("black");
 
-    return (
-        <div className="spectator">
-            <img src={leftYear} alt="" className="left-year" />
-            <img src={rightYear} alt="" className="right-year" />
-            <img src={topYear} alt="" className="top-year" />
 
-            {state === GameState.idle ? <WelcomeMessage user={currentUser} /> : <State state={state}></State>}
+    const onAnimateComplete: AnimationEndCallback = useCallback((data) => {
+        if (data["background"] !== undefined) {
+            setPreviousBackground(data["background"]);
+        }
 
-            <div className="gaap-footer">
-                <h2>GAAP 2024</h2>
-            </div>
-        </div>
-    );
-}
+        if (data["animation"] === "User") {
+            setCurrentUser(null);
+            fadeOutAudio(audio!);
+            setAnimations(LOOP_ANIMATIONS);
+            setAnimationIndex(0);
 
-function State(
-    props: {
-        state: GameState;
-    }
-) {
+            // check if there are more users in the queue
+            // if there are, we play the user animation again
+            if (userQueue.length > 0) {
+                setCurrentUser(userQueue[0]);
+                setNameQueue(prevQueue => prevQueue.slice(1));
+                console.log("Playing next user");
+                return;
+            }
+            return;
+        }
+
+        // if theres a user in the queue, we play a user animation
+        // by changing the animations array to only contain the User animation
+        if (currentUser) {
+            console.log("Playing user animation");
+            setAnimations([User]);
+            setAnimationIndex(0);
+
+            sdk?.tracks
+                .get(currentUser.trackId)
+                .then((track) => {
+                    return {
+                        previewUrl: track.preview_url,
+                        art: track.album.images[0].url
+                    }
+                })
+                .then((track) => {
+                    if (!track.previewUrl) return;
+
+                    const audio = new Audio(track.previewUrl!);
+                    setAudio(audio);
+
+                    currentUser.photo = track.art;
+                });
+            return;
+        }
+
+
+        const nextIndex = (animationIndex + 1) % animations.length;
+        setAnimationIndex(nextIndex);
+    }, [currentUser, userQueue, audio, animations, animationIndex]);
 
     useEffect(() => {
-        if (props.state === GameState.redLight) {
-            document.body.style.backgroundColor = "#E91229";
-        }
-
-        if (props.state === GameState.greenLight) {
-            document.body.style.backgroundColor = "#CFF469";
-        }
-    }, [props.state]);
-
-    const text = props.state === GameState.redLight ? "RED LIGHT" : "GREEN LIGHT";
-
-    return <>
-        <h1>{text}</h1>
-    </>
-}
-
-
-function WelcomeMessage({ user }: { user: { id: number; email: string; course: string } | null }) {
-    let title = user ? getNameFromEmail(user.email) : "General Assembly";
+        setTimeout(() => {
+            // addToQueue({
+            //     id: 1,
+            //     email: "coffee_delulu@dlsl.edu.ph",
+            //     course: "BSCS",
+            //     trackId: "2L498de9QTeKvXukcETYu7",
+            //     photo: ""
+            // })
+            // addToQueue({
+            //     id: 1,
+            //     email: "daniel_luis@dlsl.edu.ph",
+            //     course: "BSCS",
+            //     trackId: "2plbrEY59IikOBgBGLjaoe",
+            //     photo: ""
+            // })
+        }, 0);
+    }, []);
 
     return (
         <>
-            <img src={JPCS} alt="" />
-            <h1 className="spech1">
-                <TextTransition springConfig={presets.stiff}>{title}</TextTransition>
-            </h1>
+            {animations.map((Animation, index) => <div key={index}>
+                {index === animationIndex && <Animation onAnimateComplete={onAnimateComplete} user={
+                    currentUser ? {
+                        name: getNameFromEmail(currentUser.email),
+                        photo: currentUser.photo
+                    } : { name: "", photo: "" }
+                } />}
+            </div>
+            )}
         </>
     );
 }
-
 
 function getNameFromEmail(email: string) {
     return email.split("@")[0]
@@ -263,4 +290,4 @@ function useSpectatorId() {
         localStorage.setItem("spectatorId", newSpectatorId.toString());
         return newSpectatorId;
     });
-}
+}   

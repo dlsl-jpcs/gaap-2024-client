@@ -144,7 +144,12 @@ export function App(
       {
         state === GameState.idle && (
           <div className="card">
-            <h1>Waiting</h1>
+            <h1 style={{
+              color: "#121212",
+              font: "Spotify sans-serif",
+              fontWeight: "bold",
+              fontSize: "3em"
+            }} >Waiting</h1>
 
           </div>
         )
@@ -152,8 +157,11 @@ export function App(
 
 
       {
-        userCount && (
-          <p>{userCount} user(s) connected</p>
+        (userCount > 0) && (
+          <p style={{
+            color: "#121212",
+            font: "Spotify sans-serif",
+          }}>{userCount} user(s) connected</p>
         )
       }
 
@@ -162,7 +170,12 @@ export function App(
       {
         state === GameState.eliminated && (
           <div className="card">
-            <h1>Eliminated</h1>
+            <h1 style={{
+              color: "#121212",
+              font: "Spotify sans-serif",
+              fontWeight: "bold",
+              fontSize: "3em"
+            }}>Eliminated</h1>
           </div>
         ) || websocket && <Game state={state} ws={websocket} />
       }
