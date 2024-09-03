@@ -7,12 +7,10 @@ const SERVER_URL = "https://vhk7fc12-3000.asse.devtunnels.ms";
 
 export type UserProfile = {
     studentId: string;
-    section: "cs" | "it" | "emc" | "act";
-    year: number;
 }
 
 /**
- * Ensure that the user has filled out their profile before proceeding to the app
+ * Ensures that the user has filled out their profile before proceeding to the app
  */
 export function Profile() {
 
@@ -98,54 +96,14 @@ function ProfileForm(
         onProfileFilled: (profile: UserProfile) => void;
     }
 ) {
-    const [page, setPage] = useState(2);
 
-    const [section, setSection] = useState<"cs" | "it" | "emc" | "act">("cs");
-    const [year, setYear] = useState(1);
-    const [studentId, setStudentId] = useState("");
-
-    const getPage = (page: number) => {
-        switch (page) {
-            case 0:
-                return <SectionForm onSectionSelected={
-                    (section) => {
-                        setSection(section);
-                        setPage(1);
-                    }
-                } />;
-            case 1:
-                return <YearForm onYearSelected={
-                    (year) => {
-                        setYear(year);
-                        setPage(2);
-                    }
-                } />;
-            case 2:
-                return <StudentIdForm onStudentIdEntered={
-                    (studentId) => {
-                        setStudentId(studentId);
-                        props.onProfileFilled({
-                            section,
-                            year,
-                            studentId
-                        });
-                    }
-                } />;
-            default:
-                return <div />;
+    return <StudentIdForm onStudentIdEntered={
+        (studentId) => {
+            props.onProfileFilled({
+                studentId
+            });
         }
-    }
-
-    return (
-        <>
-            {getPage(page)}
-
-            {/* back button */}
-            {page === 1 && (
-                <button onClick={() => setPage(page - 1)}>Back</button>
-            )}
-        </>
-    )
+    } />;
 }
 
 function StudentIdForm(
@@ -157,6 +115,11 @@ function StudentIdForm(
     const [studentId, setStudentId] = useState("");
 
     const isValidStudentId = (studentId: string) => {
+        console.log(studentId);
+        if (studentId.length < 7) {
+            return false;
+        }
+
         return true;
     }
 
@@ -165,7 +128,7 @@ function StudentIdForm(
     return (
         <>
             <div className="section-container">
-                <h1>Enter your student ID</h1>
+                <h1>Enter your Student ID</h1>
                 <input
                     type="number"
                     inputMode="numeric"
@@ -174,7 +137,7 @@ function StudentIdForm(
                     onChange={(e) => {
                         setStudentId(e.target.value);
                         if (!isValidStudentId(e.target.value)) {
-                            setError("Invalid student id");
+                            setError("Invalid Student ID!");
                         } else {
                             setError("");
                         }
@@ -188,81 +151,18 @@ function StudentIdForm(
                     }
                 </div>
                 <button onClick={() => {
+                    setError("");
+
                     if (isValidStudentId(studentId)) {
                         props.onStudentIdEntered(studentId);
                     } else {
-                        setError("Invalid student id");
+                        setError("Invalid Student ID!");
                     }
                 }}
                     style={{
                         marginTop: "1.5em"
                     }}
                 >Submit</button>
-            </div>
-        </>
-    )
-}
-
-function YearForm(
-    props: {
-        onYearSelected: (year: number) => void;
-    }
-) {
-    return (
-        <>
-            <h1>What year are you?</h1>
-            <div className="section-container">
-                <div className="card" onClick={
-                    () => props.onYearSelected(1)
-                }>
-                    1st Year
-                </div>
-
-                <div className="card" onClick={
-                    () => props.onYearSelected(2)
-                }>2nd Year</div>
-
-                <div className="card" onClick={
-                    () => props.onYearSelected(3)
-                }>3rd Year</div>
-
-                <div className="card" onClick={
-                    () => props.onYearSelected(4)
-                }>4th Year</div>
-            </div>
-        </>
-    )
-}
-
-function SectionForm(
-    props: {
-        onSectionSelected: (section: "cs" | "it" | "emc" | "act") => void;
-    }
-) {
-    return (
-        <>
-            <h1>What's your section?</h1>
-            <div className="section-container">
-                <div className="card" onClick={
-                    () => props.onSectionSelected("it")
-                }>
-                    IT
-                </div>
-
-                <div className="card" onClick={
-                    () => props.onSectionSelected("cs")
-
-                }>CS</div>
-
-                <div className="card" onClick={
-                    () => props.onSectionSelected("emc")
-                }>EMC</div>
-
-                <div className="card"
-                    onClick={
-                        () => props.onSectionSelected("act")
-                    }
-                >ACT</div>
             </div>
         </>
     )

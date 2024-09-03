@@ -7,11 +7,6 @@ const url = "wss://" + hostname;
 
 
 export function GuessTheSongSpectator() {
-    const sdk = useSpotify(
-        import.meta.env.VITE_SPOTIFY_CLIENT_ID,
-        import.meta.env.VITE_REDIRECT_TARGET,
-        Scopes.all
-    );
 
     const [gameState, setGameState] = useState<"waiting" | "playing" | "over">("waiting");
     const [leaderboard, setLeaderboard] = useState<{ name: string, score: number }[]>([]);
@@ -44,7 +39,6 @@ export function GuessTheSongSpectator() {
 
     useEffect(() => {
         // shouldn't be possible, but just in case :D
-        if (!sdk) return;
 
         const setupWebsocket = (ws: WebSocket) => {
             ws.onopen = () => console.log("WebSocket connected as spectator");
@@ -92,7 +86,7 @@ export function GuessTheSongSpectator() {
         return () => {
             websocket?.close();
         };
-    }, [sdk]);
+    }, []);
 
     return <>
 
