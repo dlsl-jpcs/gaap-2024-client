@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { App } from "../home/App";
+import { RedLightGreenLight } from "../home/App";
 import "./profile.css";
+import { GuessTheSong } from "../guessTheSong";
+
+const SERVER_URL = "https://vhk7fc12-3000.asse.devtunnels.ms";
 
 export type UserProfile = {
     studentId: string;
@@ -36,11 +39,56 @@ export function Profile() {
                     }
                 } />
             ) : (
-                <App profile={profile} />
+                <GetRoom profile={profile} />
             )}
         </>
     );
 }
+
+function GetRoom(
+    props: {
+        profile: UserProfile;
+    }
+) {
+    const [room, setRoom] = useState<"waiting" | "RED_LIGHT_GREEN_LIGHT" | "GUESS_THE_SONG" | "ERROR">("waiting");
+
+    useEffect(() => {
+
+        // cors
+        fetch(SERVER_URL + "/api/currentRoom").then(res => res.json())
+            .then(data => {
+                setRoom(data.room);
+            }).catch(err => {
+                setRoom("ERROR");
+
+                console.error(err);
+            });
+    }, []);
+
+    return <>
+        {room === "waiting" && (
+            <div className="section-container">
+                <h1>Fetching room</h1>
+            </div>
+        )}
+        {room === "RED_LIGHT_GREEN_LIGHT" && (
+            <RedLightGreenLight profile={props.profile} />
+        )}
+        {room === "GUESS_THE_SONG" && (
+            <GuessTheSong profile={props.profile} />
+        )}
+
+        {room === "ERROR" && (
+            <>
+                <div className="section-container">
+                    <h1>There was an error </h1>
+                    <p>Try reloading the page again.</p>
+                </div>
+            </>
+        )}
+    </>
+}
+
 
 /**
  * Only Student ID is used here, ill probably remove them later

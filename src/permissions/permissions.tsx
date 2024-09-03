@@ -1,7 +1,7 @@
 import { PropsWithChildren, useEffect, useState } from "react";
 import { orientationPermissionsRequired, requestOrientationPermissioniOS, useOrientation } from "../rlgl/hooks/useOrientation";
 import { GameState } from '../rlgl/GameState';
-import { App } from "../home/App";
+import { RedLightGreenLight } from "../home/App";
 
 type PermissionState = "granted" | "denied" | "waiting"
 

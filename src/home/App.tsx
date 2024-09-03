@@ -11,7 +11,7 @@ const url = "wss://" + hostname;
  * The Red Light Green Light game, this contains the logic for handling game states
  * but the movement detection and orientation detection is handled in the @see {Game} component
  */
-export function App(
+export function RedLightGreenLight(
   props: {
     profile: UserProfile
   }
